@@ -1,0 +1,67 @@
+﻿<Page
+    x:Class="WordWar.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WordWar"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+
+    <Grid Background="#FF080808">
+        <Grid x:Name="LetterGrid" HorizontalAlignment="Left" Height="362" Margin="10,0,0,0" VerticalAlignment="Top" Width="340"/>
+        <StackPanel HorizontalAlignment="Left" Height="263" Margin="10,367,0,0" VerticalAlignment="Top" Width="340">
+            <TextBlock x:Name="CurrentWord" TextWrapping="Wrap" Text="" TextAlignment="Center">
+                <TextBlock.Foreground>
+                    <SolidColorBrush Color="White"/>
+                </TextBlock.Foreground>
+            </TextBlock>
+            <StackPanel HorizontalAlignment="Left" Height="62" VerticalAlignment="Top" Width="340" Orientation="Horizontal">
+                <Button x:Name="SubmitWord" Content="Submit" HorizontalAlignment="Left" Height="44" Margin="5,5,0,5" Width="182" Click="SubmitWord_Click" RenderTransformOrigin="0.49,-0.091" Foreground="{ThemeResource ButtonBackgroundThemeBrush}" Background="#33C39999" />
+                <Button x:Name="Spell" Content="Cast" HorizontalAlignment="Left" Height="44" Margin="5,5,0,5" Width="143" RenderTransformOrigin="0.49,-0.091" Click="Spell_Click" Background="#FF586278" />
+            </StackPanel>
+            <StackPanel HorizontalAlignment="Left" Height="67" VerticalAlignment="Top" Width="340" Orientation="Horizontal">
+                <StackPanel HorizontalAlignment="Left" Height="70" VerticalAlignment="Top" Width="260" Background="Black" Orientation="Vertical" Margin="0,0,0,-3">
+                    <TextBlock x:Name="Score" HorizontalAlignment="Left" Margin="5,1,0,1" TextWrapping="Wrap" Width="258" FontSize="36" Text="1234" TextAlignment="Center" Foreground="White" Height="44"/>
+                    <TextBlock x:Name="WordScore" HorizontalAlignment="Left" Height="21" TextWrapping="Wrap" Text="Best: blah blah blah" Width="258" Margin="2,1,0,1" TextAlignment="Left" RenderTransformOrigin="0.503,-0.214" Foreground="#FF48FB40" FontSize="14"/>
+                </StackPanel>
+                <StackPanel HorizontalAlignment="Left" Height="67" Margin="10,0,0,0" VerticalAlignment="Top" Width="62" Background="#FF8F5D5D">
+                    <TextBlock x:Name="Level" HorizontalAlignment="Left" Height="20" TextWrapping="Wrap" Text="L: 1" Width="62" Margin="0" TextAlignment="Center" Foreground="White"/>
+                    <TextBlock x:Name="Manna" HorizontalAlignment="Left" Height="20" TextWrapping="Wrap" Text="M: 0" Width="62" Margin="0,0,0,0" TextAlignment="Center" Foreground="White"/>
+                    <TextBlock x:Name="Eff" HorizontalAlignment="Left" Height="20" TextWrapping="Wrap" Text="E: 1" Width="62" Margin="0,0,0,0" TextAlignment="Center" Foreground="White"/>
+                </StackPanel>
+            </StackPanel>
+            <StackPanel HorizontalAlignment="Left" Height="111" VerticalAlignment="Top" Width="340" Background="Black" Orientation="Horizontal">
+                <StackPanel.Resources>
+                    <Style TargetType="ListBoxItem" x:Key="ScoreTemplate">
+                        <Setter Property="Height" Value="18"/>
+                        <Setter Property="Padding" Value="1,1,1,1"/>
+                    </Style>
+                </StackPanel.Resources>
+                <ListBox x:Name="TryList" Margin="5,0,2,0" FontSize="7" Foreground="White" Background="Black" Width="104">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Height" Value="18"/>
+                            <Setter Property="Padding" Value="1,1,1,1"/>
+                            <Setter Property="FontSize" Value="6"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <x:String>test</x:String>
+                    <x:String>test</x:String>
+                </ListBox>
+                <ListBox x:Name="HistoryList" Margin="2,0,5,0" FontSize="7" Foreground="White" Background="Black" Width="171">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Height" Value="18"/>
+                            <Setter Property="Padding" Value="1,1,1,1"/>
+                            <Setter Property="FontSize" Value="1"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <x:String>test</x:String>
+                    <x:String>test</x:String>
+                </ListBox>
+            </StackPanel>
+        </StackPanel>
+
+    </Grid>
+</Page>
