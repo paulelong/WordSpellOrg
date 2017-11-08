@@ -9,6 +9,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
 using Windows.Storage.Search;
+using Windows.System.Display;
 using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
@@ -17,6 +18,7 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -33,43 +35,76 @@ namespace WordWar
         SolidColorBrush NormalButtonColor = new SolidColorBrush(ColorHelper.FromArgb(255, 187, 187, 187));
         SolidColorBrush SelectedButtonColor = new SolidColorBrush(ColorHelper.FromArgb(255, 200, 130, 130));
 
-
         public MainPage()
         {
             this.InitializeComponent();
 
-            LetterProp.InitLetterPropertyList();
-
             CurrentWord.Text = "";
             WordScore.Text = "New Game";
-            Score.Text = "0";
-            Level.Text = "L: 1";
-            Eff.Text = "E: 0";
-            Manna.Text = "M: 0";
 
             TryList.Items.Clear();
             HistoryList.Items.Clear();
+            Spells.RestFoundSpells();
+        }
 
-
-            EngLetterScoring.LoadDictionary();
-
-            WordWarLogic.InitializeLetterButtonGrid(LetterGrid, CurrentWord, TryList);
+        public static Task BeginAsync(Storyboard storyboard)
+        {
+            System.Threading.Tasks.TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
+            if (storyboard == null)
+                tcs.SetException(new ArgumentNullException());
+            else
+            {
+                EventHandler<object> onComplete = null;
+                onComplete = (s, e) =>
+                {
+                    storyboard.Completed -= onComplete;
+                    tcs.SetResult(true);
+                };
+                storyboard.Completed += onComplete;
+                storyboard.Begin();
+            }
+            return tcs.Task;
         }
 
         private async void SubmitWord_Click(object sender, RoutedEventArgs e)
         {
+            WordWarLogic.LetterTipPopup.IsOpen = false;
 
             string s = WordWarLogic.GetCurrentWord().ToLower();
 
-            if (EngLetterScoring.DictionaryLookup.Contains(s))
+            if (EngLetterScoring.IsWord(s))
             {
-                WordWarLogic.RecordWordScore();
+                //ScoreFlash.Visibility = Visibility.Visible;
+                ScoreFlash.Foreground = WordWarLogic.GetFortuneColor(WordWarLogic.ScoreWord());
 
-                WordScore.Text = "Best: " + WordWarLogic.HighScoreWordTally;
+                ScoreFlash.Text = s;
+                await BeginAsync(ScoreMotionSmall);
 
-                Score.Text = WordWarLogic.totalScore.ToString();
-                HistoryList.Items.Insert(0, WordWarLogic.GetWordTally());
-                TryList.Items.Clear();
+                ScoreFlash.Text = WordWarLogic.ScoreWord().ToString();
+                await BeginAsync(ScoreMotion);
+
+                WordWarLogic.ScoreStats ss = WordWarLogic.RecordWordScore();
+                if(ss.MannaScore > 0)
+                {
+                    ScoreFlash.Foreground = WordWarLogic.GetFortuneColor(WordWarLogic.ScoreWord());
+                    ScoreFlash.Text = "Manna +" + ss.MannaScore;
+                    await BeginAsync(ScoreMotionSmall);
+                }
+
+                if (ss.bonus > 0)
+                {
+                    ScoreFlash.Foreground = WordWarLogic.GetFortuneColor(WordWarLogic.ScoreWord());
+                    ScoreFlash.Text = "Bonus +" + ss.bonus;
+                    await BeginAsync(ScoreMotionSmall);
+                }
+
+                if (ss.si != null)
+                {
+                    Announcment a = new Announcment("Nice word, you've earned a " + ss.si.FriendlyName + " spell.");
+                    await a.ShowAsync();
+                }
+
+                WordWarLogic.TurnOver();
 
                 if(WordWarLogic.CheckNextLevel(WordWarLogic.totalScore))
                 {
@@ -80,13 +115,7 @@ namespace WordWar
                     }
                     Announcment a = new Announcment(levelmsg);
                     await a.ShowAsync();
-
-                    Level.Text = "L: " + WordWarLogic.CurrentLevel.ToString();
                 }
-
-                Manna.Text = "M: " + WordWarLogic.Manna;
-
-                Eff.Text = "E: " + WordWarLogic.Efficiency.ToString();
 
                 WordWarLogic.RemoveWordAndReplaceTiles();
 
@@ -98,16 +127,13 @@ namespace WordWar
                     Announcment a = new Announcment("Game Over");
                     await a.ShowAsync();
 
-                    WordWarLogic.Replay();
-                    CurrentWord.Text = "";
-                    WordScore.Text = "New Game";
-                    Score.Text = "0";
-                    Level.Text = "L: 1";
-                    Eff.Text = "E: 0";
-                    Manna.Text = "M: 0";
+                    await WordWarLogic.SaveStats();
+                    await WordWarLogic.EndGame();
+                    WordWarLogic.Resume = false;
 
-                    TryList.Items.Clear();
-                    HistoryList.Items.Clear();
+                    this.Frame.GoBack();
+
+                    WordWarLogic.ResetSavedGame();
                 }
             }
             else
@@ -126,10 +152,25 @@ namespace WordWar
 
             if(sc.SelectedSpell !=  null)
             {
-                WordWarLogic.Manna -= sc.SelectedSpell.MannaPoints;
-
-                WordWarLogic.ReadySpell(sc.SelectedSpell);
+                WordWarLogic.ReadySpell(sc.SelectedSpell, sc.freespell);
             }
+        }
+
+        private void Page_Loaded(object sender, RoutedEventArgs e)
+        {
+            double aw = LetterGrid.ActualWidth;
+            WordWarLogic.InitializeLetterButtonGrid(LetterGrid, CurrentWord, TryList, Manna, Eff, Level, Score, WordScore, HistoryList, LetterTip, PopupText, BackgroundGrid.ActualHeight - Lower.ActualHeight);
+            
+        }
+
+        private void Page_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            WordWarLogic.ResizeButtonGrid(BackgroundGrid.ActualWidth, BackgroundGrid.ActualHeight - Lower.ActualHeight);
+        }
+
+        private void Page_Unloaded(object sender, RoutedEventArgs e)
+        {
+            //await WordWarLogic.SaveGame();
         }
     }
 }

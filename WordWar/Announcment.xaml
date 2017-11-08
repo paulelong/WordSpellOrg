@@ -6,13 +6,11 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Title="Accouncement"
-    PrimaryButtonText="OK"
+    Title="Announcement"
     SecondaryButtonText="OK"
-    PrimaryButtonClick="ContentDialog_PrimaryButtonClick"
-    SecondaryButtonClick="ContentDialog_SecondaryButtonClick" Background="#FFE6D394">
+    SecondaryButtonClick="ContentDialog_SecondaryButtonClick" Background="#FF665419">
 
     <Grid>
-        <TextBlock x:Name="Text" Grid.ColumnSpan="6" HorizontalAlignment="Left" Height="89" Margin="0,13,0,-2" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="270"/>
+        <TextBlock x:Name="Text" HorizontalAlignment="Left" Height="89" Margin="0,11,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="270"/>
     </Grid>
 </ContentDialog>

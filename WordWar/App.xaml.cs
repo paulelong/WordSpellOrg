@@ -61,6 +61,7 @@ namespace WordWar
 
                 if (e.PreviousExecutionState == ApplicationExecutionState.Terminated)
                 {
+                    WordWarLogic.Resume = true;
                     //TODO: Load state from previously suspended application
                 }
 
@@ -75,7 +76,7 @@ namespace WordWar
                     // When the navigation stack isn't restored navigate to the first page,
                     // configuring the new page by passing required information as a navigation
                     // parameter
-                    rootFrame.Navigate(typeof(MainPage), e.Arguments);
+                    rootFrame.Navigate(typeof(Intro), e.Arguments);
                 }
                 // Ensure the current window is active
                 Window.Current.Activate();
@@ -99,11 +100,18 @@ namespace WordWar
         /// </summary>
         /// <param name="sender">The source of the suspend request.</param>
         /// <param name="e">Details about the suspend request.</param>
-        private void OnSuspending(object sender, SuspendingEventArgs e)
+        private async void OnSuspending(object sender, SuspendingEventArgs e)
         {
             var deferral = e.SuspendingOperation.GetDeferral();
             //TODO: Save application state and stop any background activity
+            await WordWarLogic.SaveGame();
+
             deferral.Complete();
+        }
+
+        private void Application_Suspending(object sender, SuspendingEventArgs e)
+        {
+        
         }
     }
 }

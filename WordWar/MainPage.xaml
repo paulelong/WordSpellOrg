@@ -5,33 +5,107 @@
     xmlns:local="using:WordWar"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    mc:Ignorable="d" Loaded="Page_Loaded" SizeChanged="Page_SizeChanged" Unloaded="Page_Unloaded">
+    <Page.Resources>
+        <Storyboard x:Name="ScoreMotion">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="ScoreFlash">
+                <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="1"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:1.5" Value="0"/>
+            </DoubleAnimationUsingKeyFrames>
+            <DoubleAnimationUsingKeyFrames EnableDependentAnimation="True" Storyboard.TargetProperty="(TextBlock.FontSize)" Storyboard.TargetName="ScoreFlash">
+                <EasingDoubleKeyFrame KeyTime="0" Value="200"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:1.5" Value="250"/>
+            </DoubleAnimationUsingKeyFrames>
+            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="ScoreFlash">
+                <DiscreteObjectKeyFrame KeyTime="0">
+                    <DiscreteObjectKeyFrame.Value>
+                        <Visibility>Visible</Visibility>
+                    </DiscreteObjectKeyFrame.Value>
+                </DiscreteObjectKeyFrame>
+                <DiscreteObjectKeyFrame KeyTime="0:0:0.1">
+                    <DiscreteObjectKeyFrame.Value>
+                        <Visibility>Visible</Visibility>
+                    </DiscreteObjectKeyFrame.Value>
+                </DiscreteObjectKeyFrame>
+                <DiscreteObjectKeyFrame KeyTime="0:0:1.5">
+                    <DiscreteObjectKeyFrame.Value>
+                        <Visibility>Collapsed</Visibility>
+                    </DiscreteObjectKeyFrame.Value>
+                </DiscreteObjectKeyFrame>
+            </ObjectAnimationUsingKeyFrames>
+            <ColorAnimation Duration="0:0:1.5" To="#FF2B2929" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)" Storyboard.TargetName="stackPanel" d:IsOptimized="True"/>
+        </Storyboard>
+        <Storyboard x:Name="ScoreMotionSmall">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="ScoreFlash">
+                <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="1"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:1.5" Value="0"/>
+            </DoubleAnimationUsingKeyFrames>
+            <DoubleAnimationUsingKeyFrames EnableDependentAnimation="True" Storyboard.TargetProperty="(TextBlock.FontSize)" Storyboard.TargetName="ScoreFlash">
+                <EasingDoubleKeyFrame KeyTime="0" Value="50"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:1.5" Value="80"/>
+            </DoubleAnimationUsingKeyFrames>
+            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="ScoreFlash">
+                <DiscreteObjectKeyFrame KeyTime="0">
+                    <DiscreteObjectKeyFrame.Value>
+                        <Visibility>Visible</Visibility>
+                    </DiscreteObjectKeyFrame.Value>
+                </DiscreteObjectKeyFrame>
+                <DiscreteObjectKeyFrame KeyTime="0:0:0.1">
+                    <DiscreteObjectKeyFrame.Value>
+                        <Visibility>Visible</Visibility>
+                    </DiscreteObjectKeyFrame.Value>
+                </DiscreteObjectKeyFrame>
+                <DiscreteObjectKeyFrame KeyTime="0:0:1.5">
+                    <DiscreteObjectKeyFrame.Value>
+                        <Visibility>Collapsed</Visibility>
+                    </DiscreteObjectKeyFrame.Value>
+                </DiscreteObjectKeyFrame>
+            </ObjectAnimationUsingKeyFrames>
+            <ColorAnimation Duration="0:0:1.5" To="#FF2B2929" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)" Storyboard.TargetName="stackPanel" d:IsOptimized="True"/>
+        </Storyboard>
+    </Page.Resources>
 
 
-    <Grid Background="#FF080808">
-        <Grid x:Name="LetterGrid" HorizontalAlignment="Left" Height="362" Margin="10,0,0,0" VerticalAlignment="Top" Width="340"/>
-        <StackPanel HorizontalAlignment="Left" Height="263" Margin="10,367,0,0" VerticalAlignment="Top" Width="340">
+    <Grid x:Name="BackgroundGrid" Background="#FF080808">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <!-- Menu here -->
+            <RowDefinition Height="auto"/>
+            <!-- Content here - occupies all remaining space -->
+        </Grid.RowDefinitions>
+
+        <Grid x:Name="LetterGrid" Margin="0,0,0,0" Height="auto" VerticalAlignment="Top" MinWidth="300" MinHeight="300">
+            <Popup x:Name="LetterTip">
+                <Border Background="DarkBlue">
+                    <TextBlock x:Name="PopupText" Text="A=1" Foreground="White" SelectionHighlightColor="#FF70D5DE">
+                    </TextBlock>
+                </Border>
+            </Popup>
+        </Grid>
+        <StackPanel x:Name="Lower" Margin="0,0,0,0" Width="auto" Height="auto" VerticalAlignment="Bottom">
             <TextBlock x:Name="CurrentWord" TextWrapping="Wrap" Text="" TextAlignment="Center">
                 <TextBlock.Foreground>
                     <SolidColorBrush Color="White"/>
                 </TextBlock.Foreground>
             </TextBlock>
-            <StackPanel HorizontalAlignment="Left" Height="62" VerticalAlignment="Top" Width="340" Orientation="Horizontal">
-                <Button x:Name="SubmitWord" Content="Submit" HorizontalAlignment="Left" Height="44" Margin="5,5,0,5" Width="182" Click="SubmitWord_Click" RenderTransformOrigin="0.49,-0.091" Foreground="{ThemeResource ButtonBackgroundThemeBrush}" Background="#33C39999" />
-                <Button x:Name="Spell" Content="Cast" HorizontalAlignment="Left" Height="44" Margin="5,5,0,5" Width="143" RenderTransformOrigin="0.49,-0.091" Click="Spell_Click" Background="#FF586278" />
+            <StackPanel HorizontalAlignment="Center" Height="50" VerticalAlignment="Top" Width="340" Orientation="Horizontal">
+                <Button x:Name="SubmitWord" Content="Submit" HorizontalAlignment="Left" Height="44" Margin="5,5,0,5" Width="182" Click="SubmitWord_Click" RenderTransformOrigin="0.49,-0.091" Foreground="White" Background="#33C9AEAE" FontSize="24" />
+                <Button x:Name="Spell" Content="Cast" HorizontalAlignment="Left" Height="44" Margin="5,5,0,5" Width="143" RenderTransformOrigin="0.49,-0.091" Click="Spell_Click" Background="#FF586278" FontSize="24" />
             </StackPanel>
-            <StackPanel HorizontalAlignment="Left" Height="67" VerticalAlignment="Top" Width="340" Orientation="Horizontal">
-                <StackPanel HorizontalAlignment="Left" Height="70" VerticalAlignment="Top" Width="260" Background="Black" Orientation="Vertical" Margin="0,0,0,-3">
-                    <TextBlock x:Name="Score" HorizontalAlignment="Left" Margin="5,1,0,1" TextWrapping="Wrap" Width="258" FontSize="36" Text="1234" TextAlignment="Center" Foreground="White" Height="44"/>
-                    <TextBlock x:Name="WordScore" HorizontalAlignment="Left" Height="21" TextWrapping="Wrap" Text="Best: blah blah blah" Width="258" Margin="2,1,0,1" TextAlignment="Left" RenderTransformOrigin="0.503,-0.214" Foreground="#FF48FB40" FontSize="14"/>
+            <StackPanel HorizontalAlignment="Center" Height="67" VerticalAlignment="Top" Width="340" Orientation="Horizontal">
+                <StackPanel HorizontalAlignment="Left" Height="67" VerticalAlignment="Top" Width="238" Background="Black" Orientation="Vertical" Margin="0,4,0,-4">
+                    <TextBlock x:Name="Score" Margin="0,0,0,0" TextWrapping="Wrap" FontSize="36" Text="1234" TextAlignment="Center" Foreground="White" Height="39" Padding="0,0,0,0" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="WordScore" Height="20" TextWrapping="Wrap" Text="Best: blah blah blah" Margin="2,1,0,1" TextAlignment="Left" RenderTransformOrigin="0.53,-0.214" Foreground="#FFF8FB40" FontSize="14"/>
                 </StackPanel>
-                <StackPanel HorizontalAlignment="Left" Height="67" Margin="10,0,0,0" VerticalAlignment="Top" Width="62" Background="#FF8F5D5D">
-                    <TextBlock x:Name="Level" HorizontalAlignment="Left" Height="20" TextWrapping="Wrap" Text="L: 1" Width="62" Margin="0" TextAlignment="Center" Foreground="White"/>
-                    <TextBlock x:Name="Manna" HorizontalAlignment="Left" Height="20" TextWrapping="Wrap" Text="M: 0" Width="62" Margin="0,0,0,0" TextAlignment="Center" Foreground="White"/>
-                    <TextBlock x:Name="Eff" HorizontalAlignment="Left" Height="20" TextWrapping="Wrap" Text="E: 1" Width="62" Margin="0,0,0,0" TextAlignment="Center" Foreground="White"/>
+                <StackPanel x:Name="stackPanel" HorizontalAlignment="Left" Height="67" Margin="10,0,10,0" VerticalAlignment="Top" Width="87" Background="#FF8F5D5D">
+                    <TextBlock x:Name="Level" Height="20" TextWrapping="Wrap" Text="L: 1" Margin="0,0" TextAlignment="Center" Foreground="White"/>
+                    <TextBlock x:Name="Manna" Height="20" TextWrapping="Wrap" Text="M: 0" Margin="0,0,0,0" TextAlignment="Center" Foreground="White"/>
+                    <TextBlock x:Name="Eff" Height="20" TextWrapping="Wrap" Text="E: 1" Margin="0,0,0,0" TextAlignment="Center" Foreground="White"/>
                 </StackPanel>
             </StackPanel>
-            <StackPanel HorizontalAlignment="Left" Height="111" VerticalAlignment="Top" Width="340" Background="Black" Orientation="Horizontal">
+            <StackPanel HorizontalAlignment="Center" Height="111" VerticalAlignment="Top" Width="340" Background="Black" Orientation="Horizontal">
                 <StackPanel.Resources>
                     <Style TargetType="ListBoxItem" x:Key="ScoreTemplate">
                         <Setter Property="Height" Value="18"/>
@@ -49,7 +123,7 @@
                     <x:String>test</x:String>
                     <x:String>test</x:String>
                 </ListBox>
-                <ListBox x:Name="HistoryList" Margin="2,0,5,0" FontSize="7" Foreground="White" Background="Black" Width="171">
+                <ListBox x:Name="HistoryList" Margin="2,0,5,0" FontSize="7" Foreground="White" Background="Black" Width="225">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="ListBoxItem">
                             <Setter Property="Height" Value="18"/>
@@ -62,6 +136,7 @@
                 </ListBox>
             </StackPanel>
         </StackPanel>
+        <TextBlock x:Name="ScoreFlash" Margin="10,140,10,0" TextWrapping="Wrap" Text="25" Height="236" VerticalAlignment="Top" FontSize="160" TextAlignment="Center" FontFamily="{StaticResource ShowtimeFont}" Visibility="Collapsed"/>
 
     </Grid>
 </Page>

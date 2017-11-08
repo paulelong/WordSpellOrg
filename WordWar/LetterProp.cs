@@ -6,19 +6,36 @@ using System.Threading.Tasks;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
 namespace WordWar
 {
     class LetterProp
     {
+        public int i, j;
+        private TileTypes tt;
+        public Button b;
+        private byte _letter;
+        static private int prob_total;
+
+        public TileTypes TileType
+        {
+            get { return tt;  }
+        }
+
+        static Dictionary<TileTypes, TileTypeProperties> SortedTiles = new Dictionary<TileTypes, TileTypeProperties>();
+        static List<TileProb> TilesForLevel = new List<TileProb>();
+
         static Random r = new Random();
 
-        public int i, j;
-        private TileType tt;
-        public Button b;
+        public byte letter
+        {
+            get { return _letter;  }
+            set { _letter = value; b.Content = Convert.ToChar(_letter).ToString(); }
+        }
 
-        public enum TileType
+        public enum TileTypes
         {
             WordDouble,
             LetterDouble,
@@ -32,6 +49,7 @@ namespace WordWar
         struct TileTypeProperties
         {
             public double probability;
+            public int prob2;
             public Color foreground;
             public Color background;
             public double depthmod;
@@ -39,25 +57,59 @@ namespace WordWar
             public double levelmod;
         }
 
-        static Dictionary<TileType, TileTypeProperties> TileTypeProp = new Dictionary<TileType, TileTypeProperties>
+        struct TileProb
         {
-            {TileType.Normal, new TileTypeProperties { probability = 1.0, foreground = Colors.Black, background = Colors.DarkGray, depthmod = 0.01, level = 0, levelmod = 0.0 } },
-            {TileType.LetterDouble, new TileTypeProperties {probability = 0.08, foreground = Colors.Black, background = Colors.LightPink, depthmod = 0.01, level = 2, levelmod = 0.002 }},
-            {TileType.WordDouble, new TileTypeProperties {probability = 0.05, foreground = Colors.Black, background = Colors.LightCyan, depthmod = 0.01, level = 6, levelmod = 0.003 }},
-            {TileType.LetterTriple, new TileTypeProperties {probability = 0.04, foreground = Colors.Black, background = Colors.Pink, depthmod = 0.01, level = 7, levelmod = 0.002 }},
-            {TileType.WordTriple, new TileTypeProperties {probability = 0.03, foreground = Colors.Black, background = Colors.Cyan, depthmod = 0.01, level = 4, levelmod = 0.002 }},
-            {TileType.Burning, new TileTypeProperties{probability = 0.12, foreground = Colors.Red, background = Colors.LightGray, depthmod = 1.0, level = 3, levelmod = 0.004 }},
-            {TileType.Manna, new TileTypeProperties{probability = 0.15, foreground = Colors.Gold, background = Colors.DarkBlue, depthmod = 1.0, level = 5, levelmod = 0.005 }},
+            public int probability;
+            public TileTypes tt;
+        }
+
+        static Dictionary<TileTypes, TileTypeProperties> TileTypeProp = new Dictionary<TileTypes, TileTypeProperties>
+        {
+            {TileTypes.Normal, new TileTypeProperties { prob2 = 150, probability = 1.0, background = Colors.Black, foreground = Colors.DarkGray, depthmod = 0.01, level = 0, levelmod = 0.0 } },
+            {TileTypes.LetterDouble, new TileTypeProperties { prob2 = 10, probability = 0.08, foreground = Colors.Black, background = Colors.LightPink, depthmod = 0.01, level = 2, levelmod = 0.2 }},
+            {TileTypes.WordDouble, new TileTypeProperties { prob2 = 8, probability = 0.05, foreground = Colors.Black, background = Colors.LightCyan, depthmod = 0.01, level = 4, levelmod = 0.2 }},
+            {TileTypes.LetterTriple, new TileTypeProperties { prob2 = 5, probability = 0.04, foreground = Colors.Black, background = Colors.DeepPink, depthmod = 0.01, level = 7, levelmod = 0.2 }},
+            {TileTypes.WordTriple, new TileTypeProperties { prob2 = 4, probability = 0.03, foreground = Colors.Black, background = Colors.Cyan, depthmod = 0.01, level = 6, levelmod = 0.2 }},
+            {TileTypes.Burning, new TileTypeProperties{ prob2 = 10, probability = 0.12, background = Colors.Black, foreground = Colors.Red, depthmod = 1.0, level = 3, levelmod = 0.5 }},
+            {TileTypes.Manna, new TileTypeProperties{ prob2 = 8, probability = 0.15, foreground = Colors.Gold, background = Colors.DarkBlue, depthmod = 1.0, level = 5, levelmod = 0.4 }},
         };
 
-        static Dictionary<TileType, TileTypeProperties> SortedTiles = new Dictionary<TileType, TileTypeProperties>();
 
         public static void InitLetterPropertyList()
         {
-            foreach (KeyValuePair<TileType, TileTypeProperties> pair in TileTypeProp.OrderBy(key => key.Value.probability))
+            foreach (KeyValuePair<TileTypes, TileTypeProperties> pair in TileTypeProp.OrderBy(key => key.Value.probability))
             {
                 SortedTiles.Add(pair.Key, pair.Value);
             }
+        }
+
+        public static void InitProbability(int level)
+        {
+            prob_total = 0;
+            TilesForLevel.Clear();
+
+            foreach (KeyValuePair<TileTypes, TileTypeProperties> pair in TileTypeProp)
+            {
+                if(level >= pair.Value.level)
+                {
+                    TileProb tp = new TileProb();
+                    tp.probability = (pair.Value.prob2 + (int)(pair.Value.levelmod * level));
+                    tp.tt = pair.Key;
+                    prob_total += tp.probability;
+                    TilesForLevel.Add(tp);
+                }
+            }
+        }
+
+        public LetterProp(byte _letter, TileTypes _tt, int _i, int _j)
+        {
+            i = _i;
+            j = _j;
+            tt = _tt;
+
+            CreateButton();
+
+            letter = _letter;
         }
 
         public LetterProp(int level, bool levelup, int _i, int _j)
@@ -66,21 +118,34 @@ namespace WordWar
             j = _j;
             tt = CreateNewTile(level, levelup);
 
+            CreateButton();
+
+            letter = EngLetterScoring.GetRandomLetter(IsBurning(), WordWarLogic.GetFortune());
+        }
+
+        private void CreateButton()
+        { 
             b = new Button();
             b.Name = i.ToString() + "," + j.ToString();
-            b.Height = WordWarLogic.ButtonHeight;
-            b.Width = WordWarLogic.ButtonWidth;
-            b.FontSize = 24;
+            b.Height = WordWarLogic.ButtonHeight - 1;
+            b.Width = WordWarLogic.ButtonWidth - 1;
+            b.FontSize = GetFontSize();
             b.FontWeight = Windows.UI.Text.FontWeights.Bold;
-            b.Content = EngLetterScoring.GetRandomLetter(IsBurning());
-            b.Margin = new Thickness(1);
+            b.Margin = new Thickness(0, 0, 0, 0);
             b.Background = GetBackColor();
             b.Foreground = GetForeColor();
-            b.Padding = new Thickness(1);
+            b.Padding = new Thickness(0,-3,0,0);
             b.DataContext = this;
+            b.BorderBrush = WordWarLogic.GetFortuneColor();
+            b.BorderThickness = new Thickness(1);
 
             Grid.SetRow(b, j);
             Grid.SetColumn(b, i);
+        }
+
+        public static double GetFontSize()
+        {
+            return WordWarLogic.ButtonHeight / 2 + 10;
         }
 
         public SolidColorBrush GetBackColor()
@@ -95,37 +160,60 @@ namespace WordWar
             return new SolidColorBrush(ttp.foreground);
         }
 
-        private TileType CreateNewTile(int CurrentLevel, bool levelup)
+        private TileTypes CreateNewTile(int CurrentLevel, bool levelup)
         {
-            double val = r.NextDouble();
-
-            foreach(KeyValuePair<TileType, TileTypeProperties> pair in SortedTiles)
+            if (levelup)
             {
-                if ((pair.Value.level <= CurrentLevel && val < (pair.Value.probability + (CurrentLevel * pair.Value.levelmod))) || (levelup && pair.Value.level == CurrentLevel))
+                foreach (KeyValuePair<TileTypes, TileTypeProperties> pair in TileTypeProp)
                 {
-                    return pair.Key;
+                    if(pair.Value.level == CurrentLevel)
+                    {
+                        return pair.Key;
+                    }
                 }
             }
 
-            return TileType.Normal;
+            int index = r.Next(prob_total);
+            int sum = 0;
+            int i = 0;
+
+            while (sum < index)
+            {                
+                sum = sum + TilesForLevel[i++].probability;
+            }
+            return TilesForLevel[Math.Max(0, i - 1)].tt;
         }
 
         internal bool IsBurning()
         {
-            if(tt == TileType.Burning)
+            if(tt == TileTypes.Burning)
             {
                 return true;
             }
             return false;
         }
 
+        public string LetterPopup()
+        {
+            string ret = Convert.ToChar(letter).ToString() + "=" + EngLetterScoring.LetterValue(letter).ToString();
+            if (GetLetterMult() > 1)
+            {
+                ret += " Letter x" + GetLetterMult().ToString();
+            } else if(GetWordMult() >= 1)
+            {
+                ret += " Word x" + (GetWordMult()+1).ToString();
+            }
+
+            return ret;
+        }
+
         internal int GetLetterMult()
         {
-            if (tt == TileType.LetterDouble)
+            if (tt == TileTypes.LetterDouble)
             {
                 return 2;
             }
-            else if (tt == TileType.LetterTriple)
+            else if (tt == TileTypes.LetterTriple)
             {
                 return 3;
             }
@@ -135,31 +223,31 @@ namespace WordWar
 
         internal int GetWordMult()
         {
-            if (tt == TileType.WordDouble)
+            if (tt == TileTypes.WordDouble)
             {
                 return 2;
-            } else if(tt == TileType.WordDouble)
+            } else if(tt == TileTypes.WordTriple)
             {
                 return 3;
             }
 
-            return 1;
+            return 0;
         }
 
         internal bool IsManna()
         {
-            if (tt == TileType.Manna)
+            if (tt == TileTypes.Manna)
             {
                 return true;
             }
             return false;
         }
 
-        internal void ChangeTileTo(Button b, TileType _tt)
+        internal void ChangeTileTo(TileTypes _tt)
         {
             switch(_tt)
             {
-                case TileType.Burning:
+                case TileTypes.Burning:
                     tt = _tt;
                     b.Foreground = GetForeColor();
                     b.Background = GetBackColor();

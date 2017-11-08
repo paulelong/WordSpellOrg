@@ -8,8 +8,15 @@
     mc:Ignorable="d"
     Title="Choose Word Spell"
     SecondaryButtonText="Back"
-    SecondaryButtonClick="ContentDialog_SecondaryButtonClick" Background="#FF807C8F" Height="340.667" Width="342.667">
+    SecondaryButtonClick="ContentDialog_SecondaryButtonClick" Background="#FF201644" Height="Auto" Width="Auto">
 
-    <Grid x:Name="SpellGrid" Height="176" Margin="-18,0,-12,0" Background="#FFA49797">
+    <Grid>
+        <StackPanel x:Name="SpellGrid" Margin="0" Background="#FF393068">
+            <TextBlock Text="Level Spells"/>
+            <Grid x:Name="SpellCastGrid" Margin="5,0" Background="#FF544A88" Height="200"/>
+            <TextBlock Text="Earned Spells"/>
+            <Grid x:Name="SpellFoundGrid" Height="200" Margin="5,0" Background="#FF544A88">
+            </Grid>
+        </StackPanel>
     </Grid>
 </ContentDialog>

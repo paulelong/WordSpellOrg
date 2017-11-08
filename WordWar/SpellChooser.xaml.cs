@@ -21,6 +21,7 @@ namespace WordWar
     {
         int totalManna = 0;
         public SpellInfo SelectedSpell = null;
+        public bool freespell = false;
 
         public SpellChooser(int _totalManna)
         {
@@ -28,7 +29,19 @@ namespace WordWar
 
             totalManna = _totalManna;
 
-            Spells.ListButtons(SpellGrid, _totalManna, SpellClick);
+            Spells.ListButtons(SpellCastGrid, SpellFoundGrid, _totalManna, SpellClick, FoundSpellClick);
+        }
+
+        private void FoundSpellClick(object sender, RoutedEventArgs e)
+        {
+            Button b = sender as Button;
+
+            SpellInfo si = b.DataContext as SpellInfo;
+
+            SelectedSpell = si;
+            this.Hide();
+
+            freespell = true;
         }
 
         private void SpellClick(object sender, RoutedEventArgs e)
@@ -42,6 +55,8 @@ namespace WordWar
                 SelectedSpell = si;
                 this.Hide();
             }
+
+            freespell = false;
         }
 
         private void ContentDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
